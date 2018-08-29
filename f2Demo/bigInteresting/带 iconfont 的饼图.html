@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.2.1/f2.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'charts-icon';  /* project id 750097 */
+        src: url('https://at.alicdn.com/t/font_750097_7vtswa9trv7.eot');
+        src: url('https://at.alicdn.com/t/font_750097_7vtswa9trv7.eot?#iefix') format('embedded-opentype'),
+        url('https://at.alicdn.com/t/font_750097_7vtswa9trv7.woff') format('woff'),
+        url('https://at.alicdn.com/t/font_750097_7vtswa9trv7.ttf') format('truetype'),
+        url('https://at.alicdn.com/t/font_750097_7vtswa9trv7.svg#iconfont') format('svg');
+      }
+    </style>
+</head>
+<body>
+
+  <div class="chart-wrapper">
+    <canvas id="mountNode"></canvas>
+  </div>
+<script>
+var fontSize = 24 * (window.innerWidth / 1920); // 字体适配不同屏幕
+
+// 根据角度和圆心求坐标
+function _getEndPoint(center, angle, r) {
+  return {
+    x: center.x + r * Math.cos(angle),
+    y: center.y + r * Math.sin(angle)
+  };
+}
+var _F = F2,
+  Shape = _F.Shape,
+  Util = _F.Util,
+  G = _F.G;
+var Vector2 = G.Vector2;
+
+Shape.registerShape('interval', 'pie-with-icon', {
+  draw: function draw(cfg, container) {
+    var points = this.parsePoints(cfg.points);
+    var style = Util.mix({
+      fill: cfg.color
+    }, cfg.style);
+    var coord = this._coord;
+    if (cfg.isInCircle && coord.transposed) {
+      // 只处理极坐标y
+      var newPoints = [points[0], points[3], points[2], points[1]];
+
+      var _cfg$center = cfg.center,
+        x = _cfg$center.x,
+        y = _cfg$center.y;
+
+      var v = [1, 0];
+      var v0 = [newPoints[0].x - x, newPoints[0].y - y];
+      var v1 = [newPoints[1].x - x, newPoints[1].y - y];
+      var v2 = [newPoints[2].x - x, newPoints[2].y - y];
+
+      var startAngle = Vector2.angleTo(v, v1);
+      var endAngle = Vector2.angleTo(v, v2);
+      var r0 = Vector2.length(v0);
+      var r = Vector2.length(v1);
+
+      if (startAngle >= 1.5 * Math.PI) {
+        startAngle = startAngle - 2 * Math.PI;
+      }
+
+      if (endAngle >= 1.5 * Math.PI) {
+        endAngle = endAngle - 2 * Math.PI;
+      }
+
+      var middleAngle = (startAngle + endAngle) / 2;
+      var numbricCenter = _getEndPoint(cfg.center, middleAngle, (r + r0) / 2);
+
+      var sector = container.addShape('Sector', {
+        className: 'interval',
+        attrs: Util.mix({
+          x: x,
+          y: y,
+          r: r,
+          r0: r0,
+          startAngle: startAngle,
+          endAngle: endAngle
+        }, style)
+      });
+
+      var sectorBBox = sector.getBBox();
+      if (sectorBBox.width >= fontSize && sectorBBox.height >= fontSize) {
+        // 确定扇形部分可以放下 iconfont
+        var text = container.addShape('text', {
+          attrs: {
+            x: numbricCenter.x,
+            y: numbricCenter.y,
+            fontFamily: 'charts-icon',
+            textAlign: 'center',
+            textBaseline: 'middle',
+            fontSize: fontSize,
+            text: String.fromCharCode(parseInt(cfg.origin._origin.iconfont, 16)),
+            fill: '#fff',
+            fontWeight: '200'
+          }
+        });
+
+        return [sector, text];
+      }
+      return sector;
+    }
+  }
+});
+
+var data = [{
+  name: '吊环',
+  percent: 30,
+  a: '1',
+  iconfont: 'e64b'
+}, {
+  name: '拳击',
+  percent: 25,
+  a: '1',
+  iconfont: 'e650'
+}, {
+  name: '跑步机',
+  percent: 15,
+  a: '1',
+  iconfont: 'e64f'
+}, {
+  name: '跳绳',
+  percent: 15,
+  a: '1',
+  iconfont: 'e651'
+}, {
+  name: '杠铃',
+  percent: 15,
+  a: '1',
+  iconfont: 'e64c'
+}];
+
+var map = {};
+data.map(function(obj) {
+  map[obj.name] = obj.percent + '%';
+});
+
+var chart = new F2.Chart({
+  id: 'mountNode',
+  pixelRatio: window.devicePixelRatio
+});
+chart.source(data, {
+  percent: {
+    formatter: function formatter(val) {
+      return val + '%';
+    }
+  }
+});
+chart.tooltip(false);
+chart.legend({
+  position: 'right',
+  marker: 'square',
+  itemFormatter: function itemFormatter(val) {
+    return val + '  ' + map[val];
+  }
+});
+chart.coord('polar', {
+  transposed: true,
+  innerRadius: 0.4,
+  radius: 0.85
+});
+chart.axis(false);
+chart.interval().position('a*percent').color('name', ['#1890FF', '#13C2C2', '#2FC25B', '#FACC14', '#F04864', '#8543E0', '#3436C7', '#223273']).adjust('stack').shape('pie-with-icon');
+chart.render();
+</script>    
+</body>
+</html>

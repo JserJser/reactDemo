@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.2.1/f2.min.js"></script>
+</head>
+<body>
+    <div class="chart-wrapper">
+        <canvas id="mountNode"></canvas>
+  </div>
+     <script>
+var data = [{
+  year: '2001',
+  population: 41.8
+}, {
+  year: '2002',
+  population: 25.8
+}, {
+  year: '2003',
+  population: 31.7
+}, {
+  year: '2004',
+  population: 46
+}, {
+  year: '2005',
+  population: 28
+}];
+
+var chart = new F2.Chart({
+  id: 'mountNode',
+  pixelRatio: window.devicePixelRatio
+});
+chart.source(data);
+chart.coord('polar');
+chart.legend({
+  position: 'right'
+});
+chart.axis(false);
+chart.interval().position('year*population').color('year').style({
+  lineWidth: 1,
+  stroke: '#fff'
+});
+chart.render();
+</script>
+</body>
+</html>

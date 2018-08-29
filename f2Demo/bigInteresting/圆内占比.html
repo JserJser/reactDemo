@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+       <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.2.1/f2.min.js"></script>
+</head>
+<body>
+      <div class="chart-wrapper">
+    <canvas id="mountNode"></canvas>
+  </div>
+  <script>
+var _F = F2,
+  Shape = _F.Shape,
+  Util = _F.Util;
+
+var circleClip = void 0;
+
+// 自定义 shape，创建在圆形剪切区域的矩形
+Shape.registerShape('interval', 'circle-clip', {
+  draw: function draw(cfg, container) {
+    var points = this.parsePoints(cfg.points);
+    var style = Util.mix({
+      fill: cfg.color
+    }, cfg.style);
+
+    // points 顺序
+    // 1 --- 2
+    // |     |
+    // 0 --- 3
+    var coord = this._coord; // 获取坐标系对象
+    var coordHeight = coord.y.start - coord.y.end;
+    var radius = coordHeight / 2;
+    var center = {
+      x: (points[0].x + points[3].x) / 2,
+      y: (coord.y.start + coord.y.end) / 2
+    }; // 剪切圆的圆心， x 应该是对应柱子的中间点，y 是对应坐标系的纵轴中心点
+    var rectHeight = Math.abs(points[2].y - points[3].y);
+    var rectStart = {
+      x: center.x - radius,
+      y: points[1].y
+    };
+    // 创建矩形
+    var rect = container.addShape('rect', {
+      className: 'interval',
+      attrs: Util.mix({
+        x: rectStart.x,
+        y: rectStart.y,
+        width: radius * 2,
+        height: rectHeight
+      }, style)
+    });
+
+    // 在 canvas 上创建剪切圆
+    if (!circleClip) {
+      var canvas = container.get('canvas');
+      circleClip = canvas.addShape('circle', {
+        zIndex: 10,
+        attrs: {
+          x: center.x,
+          y: center.y,
+          r: radius,
+          lineWidth: 2,
+          stroke: '#ccc'
+        }
+      });
+    }
+
+    rect.attr('clip', circleClip);
+
+    return rect;
+  }
+});
+
+// 开始绘制图表
+var data = [{
+  type: 'a',
+  value: 25
+}];
+
+var chart = new F2.Chart({
+  id: 'mountNode',
+  pixelRatio: window.devicePixelRatio
+});
+chart.source(data, {
+  value: {
+    max: 100 // 设置 value 的最大值
+  }
+});
+chart.axis(false);
+chart.tooltip(false);
+chart.interval().position('type*value').shape('circle-clip').animate({
+  appear: { // 为了使动画效果更好，自定义动画，使用矩形的高度变化
+    duration: 1000, // 动画的执行时间
+    animation: function animation(shape, animateCfg) {
+      var height = shape.attr('height');
+      var y = shape.attr('y');
+      shape.attr('height', 0);
+      shape.attr('y', y + height);
+      shape.animate().to(Util.mix({
+        attrs: {
+          height: height,
+          y: y
+        }
+      }, animateCfg));
+    }
+  }
+});
+chart.render();
+
+setTimeout(function() {
+  // 更新数据
+  chart.changeData([{
+    type: 'a',
+    value: 90
+  }]);
+}, 3500);
+</script>
+
+
+</body>
+</html>

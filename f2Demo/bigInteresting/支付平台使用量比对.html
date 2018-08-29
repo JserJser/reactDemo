@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.2.1/f2.min.js"></script>
+</head>
+<body>
+    <div class="chart-wrapper">
+    <canvas id="mountNode"></canvas>
+  </div>
+ <script>
+var Shape = F2.Shape;
+Shape.registerShape('point', 'with-text', {
+  draw: function draw(cfg, container) {
+    var size = cfg.size;
+    var x = cfg.x;
+    var y = cfg.y;
+    var circle = container.addShape('Circle', {
+      className: 'point',
+      attrs: {
+        x: x,
+        y: y,
+        r: size,
+        fill: cfg.color
+      }
+    });
+    var origin = cfg.origin._origin;
+    var text = container.addShape('Text', {
+      className: 'text',
+      attrs: {
+        x: x,
+        y: y - size - 4,
+        fill: '#000',
+        text: origin.name + '\n' + '$' + origin.volumes + 'billion',
+        textBaseline: 'bottom',
+        textAlign: 'center',
+        fontSize: 10
+      }
+    });
+    return [circle, text];
+  }
+});
+var data = [{
+  name: 'Stripe',
+  volumes: 1.5,
+  x: 0.8,
+  y: 50
+}, {
+  name: 'Swipely',
+  volumes: 2,
+  x: 2.5,
+  y: 50
+}, {
+  name: 'Square',
+  volumes: 30,
+  x: 4.2,
+  y: 50
+}, {
+  name: 'Alipay',
+  volumes: 150,
+  x: 6.7,
+  y: 50
+}, {
+  name: 'Paypal',
+  volumes: 180,
+  x: 10.5,
+  y: 50
+}];
+var chart = new F2.Chart({
+  id: 'mountNode',
+  pixelRatio: window.devicePixelRatio
+});
+chart.source(data, {
+  y: {
+    min: 0,
+    max: 100
+  },
+  x: {
+    max: 12,
+    tickInerval: 1
+  }
+});
+chart.axis(false);
+chart.tooltip(false);
+chart.legend(false);
+chart.point().position('x*y').color('volumes', '#BAE7FF-#1890FF-#0050B3').size('volumes', [10, 50]).shape('with-text');
+chart.render();
+</script>
+
+</body>
+</html>
